@@ -345,34 +345,65 @@
             guidance: 'https://guidance-view.vercel.app/',
         };
 
-        // ── Credentials ──────────────────────────────────────────
-        const USERS = [
-            { email: 'himc@gmail.com',           password: '12345', portal: 'do'       },
-            { email: 'student@gmail.com',         password: '12345', portal: 'student'  },
-            { email: 'it.himc@gmail.com',         password: '12345', portal: 'it'       },
-            { email: 'teacher.himc@gmail.com',    password: '12345', portal: 'teacher'  },
-            { email: 'guidance.himc@gmail.com',   password: '12345', portal: 'guidance' },
-        ];
+        // ── Staff Credentials ────────────────────────────────────
+const STAFF_USERS = [
+    { email: 'himc@gmail.com',           password: '12345', portal: 'do'       },
+    { email: 'it.himc@gmail.com',         password: '12345', portal: 'it'       },
+    { email: 'teacher.himc@gmail.com',    password: '12345', portal: 'teacher'  },
+    { email: 'guidance.himc@gmail.com',   password: '12345', portal: 'guidance' },
+];
 
-        // ── Form submit ──────────────────────────────────────────
-        document.getElementById('loginForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+const API_BASE = 'https://tabularly-tactless-deloras.ngrok-free.dev';
 
-            const email    = document.getElementById('email').value.trim().toLowerCase();
-            const password = document.getElementById('password').value;
-            const errorEl  = document.getElementById('errorMessage');
+// ── Form submit ──────────────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-            const match = USERS.find(u => u.email === email && u.password === password);
+    const email    = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    const errorEl  = document.getElementById('errorMessage');
+    const btn      = document.querySelector('.login-button');
 
-            if (match) {
-                errorEl.style.display = 'none';
-                window.location.href = PORTALS[match.portal];
-            } else {
-                errorEl.textContent   = 'Invalid email or password. Please try again.';
-                errorEl.style.display = 'block';
-                setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
-            }
+    // Check staff first
+    const staffMatch = STAFF_USERS.find(u => u.email === email && u.password === password);
+    if (staffMatch) {
+        errorEl.style.display = 'none';
+        window.location.href = PORTALS[staffMatch.portal];
+        return;
+    }
+
+    // Try student login via API
+    btn.textContent = 'Logging in…';
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch(`${API_BASE}/student_login.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+            },
+            body: JSON.stringify({ email, password })
         });
+        const data = await res.json();
+
+        if (data.success) {
+            errorEl.style.display = 'none';
+            window.location.href = `https://studentview-two.vercel.app/?id=${data.student_number}`;
+        } else {
+            errorEl.textContent   = data.message || 'Invalid email or password.';
+            errorEl.style.display = 'block';
+            setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
+        }
+    } catch (err) {
+        errorEl.textContent   = 'Network error. Please try again.';
+        errorEl.style.display = 'block';
+        setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
+    } finally {
+        btn.textContent = 'LOGIN';
+        btn.disabled = false;
+    }
+});
 
         // ── Toggle password visibility ───────────────────────────
         function togglePasswordVisibility() {
