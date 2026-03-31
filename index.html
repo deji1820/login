@@ -373,37 +373,36 @@ document.getElementById('loginForm').addEventListener('submit', async function (
     }
 
     // Try student login via API
-    btn.textContent = 'Logging in…';
-    btn.disabled = true;
+btn.textContent = 'Logging in…';
+btn.disabled = true;
 
-    try {
-        const res  = await fetch(`${API_BASE}/student_login.php`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            },
-            body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
+try {
+    const res  = await fetch(`${API_BASE}/student_login.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
+        body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
 
-        if (data.success) {
-            errorEl.style.display = 'none';
-            window.location.href = `https://studentview-two.vercel.app/?id=${data.student_number}`;
-        } else {
-            errorEl.textContent   = data.message || 'Invalid email or password.';
-            errorEl.style.display = 'block';
-            setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
-        }
-    } catch (err) {
-        errorEl.textContent   = 'Network error. Please try again.';
-        errorEl.style.display = 'block';
-        setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
-    } finally {
-        btn.textContent = 'LOGIN';
-        btn.disabled = false;
+    if (data.success) {
+        errorEl.style.display = 'none';
+        window.location.href = `https://studentview-two.vercel.app/?id=${data.student_number}`;
+        return;
     }
-});
+
+    // Not a student either
+    errorEl.textContent   = 'Invalid email or password.';
+    errorEl.style.display = 'block';
+    setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
+
+} catch (err) {
+    errorEl.textContent   = 'Network error. Please try again.';
+    errorEl.style.display = 'block';
+    setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
+} finally {
+    btn.textContent = 'LOGIN';
+    btn.disabled = false;
+}
 
         // ── Toggle password visibility ───────────────────────────
         function togglePasswordVisibility() {
