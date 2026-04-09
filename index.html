@@ -203,15 +203,13 @@
                 const teacherData = await teacherRes.json();
 
                 if (teacherData.success) {
-                    if (teacherData.is_first_login) sessionStorage.setItem('is_first_login', '1');
-                    // Redirect to teacher portal with teacher_id so the
-                    // dashboard can pull real data from the DB
-                    window.location.href =
-                        `${PORTALS.teacher}?id=${teacherData.teacher_id}` +
-                        `&name=${encodeURIComponent(teacherData.full_name)}` +
-                        `&email=${encodeURIComponent(teacherData.email)}`;
-                    return;
-                }
+    window.location.href =
+        `${PORTALS.teacher}?id=${teacherData.teacher_id}` +
+        `&name=${encodeURIComponent(teacherData.full_name)}` +
+        `&email=${encodeURIComponent(teacherData.email)}` +
+        `&first_login=${teacherData.is_first_login ? '1' : '0'}`;
+    return;
+}
             }
 
             // 3️⃣ Try student login via API
