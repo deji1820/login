@@ -203,6 +203,7 @@
                 const teacherData = await teacherRes.json();
 
                 if (teacherData.success) {
+                    if (data.is_first_login) sessionStorage.setItem('is_first_login', '1');
                     // Redirect to teacher portal with teacher_id so the
                     // dashboard can pull real data from the DB
                     window.location.href =
